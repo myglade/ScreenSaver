@@ -5,16 +5,21 @@
 #include "stdafx.h"
 #include "ScreenSaver.h"
 #include "ScreenSaverDlg.h"
+#include "Config.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+CString gSection = _T("screensaver");
+CString gKey = _T("host");
+CString default_host = _T("http://localhost:8888/");
 
 // CScreenSaverApp
 
 BEGIN_MESSAGE_MAP(CScreenSaverApp, CWinApp)
-	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
+    ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -22,8 +27,8 @@ END_MESSAGE_MAP()
 
 CScreenSaverApp::CScreenSaverApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+    // TODO: add construction code here,
+    // Place all significant initialization in InitInstance
 }
 
 
@@ -36,68 +41,185 @@ CScreenSaverApp theApp;
 
 BOOL CScreenSaverApp::InitInstance()
 {
-	// InitCommonControlsEx() is required on Windows XP if an application
-	// manifest specifies use of ComCtl32.dll version 6 or later to enable
-	// visual styles.  Otherwise, any window creation will fail.
-	INITCOMMONCONTROLSEX InitCtrls;
-	InitCtrls.dwSize = sizeof(InitCtrls);
-	// Set this to include all the common control classes you want to use
-	// in your application.
-	InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	InitCommonControlsEx(&InitCtrls);
+    // InitCommonControlsEx() is required on Windows XP if an application
+    // manifest specifies use of ComCtl32.dll version 6 or later to enable
+    // visual styles.  Otherwise, any window creation will fail.
+    INITCOMMONCONTROLSEX InitCtrls;
+    InitCtrls.dwSize = sizeof(InitCtrls);
+    // Set this to include all the common control classes you want to use
+    // in your application.
+    InitCtrls.dwICC = ICC_WIN95_CLASSES;
+    InitCommonControlsEx(&InitCtrls);
 
-	CWinApp::InitInstance();
+    CWinApp::InitInstance();
 
 
-	AfxEnableControlContainer();
+    AfxEnableControlContainer();
 
-	// Create the shell manager, in case the dialog contains
-	// any shell tree view or shell list view controls.
-	CShellManager *pShellManager = new CShellManager;
+    // Activate "Windows Native" visual manager for enabling themes in MFC controls
+    CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
-	// Activate "Windows Native" visual manager for enabling themes in MFC controls
-	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+    // Standard initialization
+    // If you are not using these features and wish to reduce the size
+    // of your final executable, you should remove from the following
+    // the specific initialization routines you do not need
+    // Change the registry key under which our settings are stored
+    // TODO: You should modify this string to be something appropriate
+    // such as the name of your company or organization
+    SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	// of your final executable, you should remove from the following
-	// the specific initialization routines you do not need
-	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+    m_host = AfxGetApp()->GetProfileString(gSection, gKey, _T(""));
+    if (m_host == "")
+    {
+        m_host = default_host;
+        AfxGetApp()->WriteProfileString(gSection, gKey, m_host);
+    }
 
-	CScreenSaverDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with OK
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with Cancel
-	}
-	else if (nResponse == -1)
-	{
-		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
-		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
-	}
+    CScreenSaverCommandLineInfo cmdInfo;
+    ParseCommandLine(cmdInfo);
+    return ProcessShellCommand(cmdInfo);
+}
 
-	// Delete the shell manager created above.
-	if (pShellManager != NULL)
-	{
-		delete pShellManager;
-	}
 
+
+int CScreenSaverApp::ExitInstance()
+{
 #ifndef _AFXDLL
-	ControlBarCleanUp();
+    ControlBarCleanUp();
 #endif
 
-	// Since the dialog has been closed, return FALSE so that we exit the
-	//  application, rather than start the application's message pump.
-	return FALSE;
+    delete m_pMainWnd;
+
+    return CWinApp::ExitInstance();
+}
+
+
+BOOL CScreenSaverApp::ProcessShellCommand(CScreenSaverCommandLineInfo& rCmdInfo)
+{
+    switch (rCmdInfo.m_nShellCommand)
+    {
+    case CScreenSaverCommandLineInfo::ScreenSaverMode:
+    {
+        CScreenSaverDlg *dlg = new CScreenSaverDlg();
+        m_pMainWnd = dlg;
+        dlg->SetHost(m_host);
+        dlg->SetPreviewFlag(FALSE);
+        if (!dlg->Create(IDD_SCREENSAVER_DIALOG))
+            return FALSE;
+
+        return TRUE;
+    }
+    case CScreenSaverCommandLineInfo::PreviewMode:
+    {
+        CScreenSaverDlg *dlg = new CScreenSaverDlg();
+        m_pMainWnd = dlg;
+        dlg->SetHost(m_host);
+        dlg->SetPreviewFlag(TRUE);
+
+        CWnd wndParent;
+        wndParent.Attach(rCmdInfo.m_hParentWnd);
+        if (!dlg->Create(IDD_SCREENSAVER_DIALOG, &wndParent))
+            return FALSE;
+
+        wndParent.Detach();
+        return TRUE;
+    }
+    case CScreenSaverCommandLineInfo::ShowConfigureDialog:
+    {
+        if (rCmdInfo.m_hParentWnd)
+        {
+            CWnd wndParent;
+            wndParent.Attach(rCmdInfo.m_hParentWnd);
+            ShowConfigureDialog(&wndParent);
+            wndParent.Detach();
+        }
+        else
+            ShowConfigureDialog(CWnd::GetActiveWindow());
+
+        return FALSE;
+    }
+    default:
+    {
+        ASSERT(FALSE);
+        break;
+    }
+    }
+    return FALSE;
+}
+
+void CScreenSaverApp::ParseCommandLine(_In_ CScreenSaverCommandLineInfo& rCmdInfo)
+{
+    for (int i = 1; i < __argc; i++)
+    {
+#ifdef _UNICODE
+        LPCTSTR pszParam = __wargv[i];
+#else
+        LPCTSTR pszParam = __argv[i];
+#endif
+        BOOL bFlag = FALSE;
+        BOOL bLast = ((i + 1) == __argc);
+        if (pszParam[0] == _T('-') || pszParam[0] == _T('/'))
+        {
+            //remove flag specifier
+            bFlag = TRUE;
+            ++pszParam;
+        }
+        rCmdInfo.ParseParam(pszParam, bFlag, bLast);
+    }
+}
+
+void CScreenSaverApp::ShowConfigureDialog(CWnd *wnd)
+{
+    CConfig config(wnd);
+
+    config.m_host = AfxGetApp()->GetProfileString(gSection, gKey, _T(""));
+    if (config.m_host == "") {
+        config.m_host = _T("http://192.168.1.10");
+        AfxGetApp()->WriteProfileString(gSection, gKey, config.m_host);
+    }
+    
+    if (config.DoModal() == IDOK)
+    {
+        if (config.m_host != "")
+            AfxGetApp()->WriteProfileString(gSection, gKey, config.m_host);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+CScreenSaverCommandLineInfo::CScreenSaverCommandLineInfo() : m_nShellCommand(ShowConfigureDialog), m_hParentWnd(0)
+{
+}
+
+void CScreenSaverCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL /*bFlag*/, BOOL /*bLast*/)
+{
+    if (_tcsicmp(pszParam, _T("c")) == 0)
+        m_nShellCommand = ShowConfigureDialog;
+    else if (_tcsicmp(pszParam, _T("p")) == 0)
+        m_nShellCommand = PreviewMode;
+    else if (_tcsicmp(pszParam, _T("s")) == 0)
+        m_nShellCommand = ScreenSaverMode;
+    else if ((_tcsstr(pszParam, _T("c:")) ||
+        _tcsstr(pszParam, _T("C:"))) && _tcslen(pszParam) > 2) //Handle the undocumented format of "/c:HWND"
+    {
+        m_nShellCommand = ShowConfigureDialog;
+#ifdef _WIN64
+        m_hParentWnd = reinterpret_cast<HWND>(_ttoi64(pszParam + 2));
+#else
+#pragma warning(disable:4312)
+        m_hParentWnd = reinterpret_cast<HWND>(_ttoi(pszParam + 2));
+#pragma warning(default:4312)
+#endif //#ifdef _WIN64
+    }
+    else
+    {
+        //Convert the parameter to a window handle
+#ifdef _WIN64
+        m_hParentWnd = reinterpret_cast<HWND>(_ttoi64(pszParam));
+#else
+#pragma warning(disable:4312)
+        m_hParentWnd = reinterpret_cast<HWND>(_ttoi(pszParam));
+#pragma warning(default:4312)
+#endif //#ifdef _WIN64
+    }
 }
 

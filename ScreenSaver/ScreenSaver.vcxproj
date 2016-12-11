@@ -181,6 +181,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Config.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ScreenSaver.h" />
     <ClInclude Include="ScreenSaverDlg.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="ScreenSaver.cpp" />
     <ClCompile Include="ScreenSaverDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -212,4 +214,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="ScreenSaver.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

@@ -14,16 +14,12 @@
 
 // CScreenSaverDlg dialog
 
-BEGIN_DHTML_EVENT_MAP(CScreenSaverDlg)
-	DHTML_EVENT_ONCLICK(_T("ButtonOK"), OnButtonOK)
-	DHTML_EVENT_ONCLICK(_T("ButtonCancel"), OnButtonCancel)
-END_DHTML_EVENT_MAP()
-
-
 CScreenSaverDlg::CScreenSaverDlg(CWnd* pParent /*=NULL*/)
-	: CDHtmlDialog(IDD_SCREENSAVER_DIALOG, IDR_HTML_SCREENSAVER_DIALOG, pParent)
+	: CDHtmlDialog()
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+    m_bPreview = FALSE;
+    m_bGotCursorPos = FALSE;    
 }
 
 void CScreenSaverDlg::DoDataExchange(CDataExchange* pDX)
@@ -32,6 +28,9 @@ void CScreenSaverDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CScreenSaverDlg, CDHtmlDialog)
+    ON_WM_SETCURSOR()
+    ON_WM_ACTIVATE()
+    ON_WM_ACTIVATEAPP()
 END_MESSAGE_MAP()
 
 
@@ -46,7 +45,11 @@ BOOL CScreenSaverDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// TODO: Add extra initialization here
+	CRect r;
+    GetBoundingRect(FALSE, NULL, r);
+    MoveWindow(r);
+
+    this->Navigate(m_host);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -87,14 +90,114 @@ HCURSOR CScreenSaverDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-HRESULT CScreenSaverDlg::OnButtonOK(IHTMLElement* /*pElement*/)
+BOOL CScreenSaverDlg::GetBoundingRect(BOOL bChild, CWnd* pParentWnd, CRect& rRect)
 {
-	OnOK();
-	return S_OK;
+    rRect.SetRectEmpty();
+
+    if (bChild)
+    {
+        if ((pParentWnd == NULL) || !pParentWnd->GetSafeHwnd())
+        {
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+        pParentWnd->GetClientRect(&rRect);
+    }
+    else
+    {
+        //Get the bounding rect of the screen, This
+        //will also handle the case of multiple monitors
+        HDC hScreenDC = ::GetDC(NULL);
+        ::GetClipBox(hScreenDC, rRect);
+        ::ReleaseDC(NULL, hScreenDC);
+    }
+
+    return TRUE;
 }
 
-HRESULT CScreenSaverDlg::OnButtonCancel(IHTMLElement* /*pElement*/)
+
+void CScreenSaverDlg::Close()
 {
-	OnCancel();
-	return S_OK;
+    if (!m_bPreview)
+        DestroyWindow();
+}
+
+BOOL CScreenSaverDlg::PreTranslateMessage(MSG* pMsg)
+{
+    if (pMsg->message == WM_LBUTTONDOWN 
+        || pMsg->message == WM_RBUTTONDOWN 
+        || pMsg->message == WM_MBUTTONDOWN 
+        || pMsg->message == WM_KEYDOWN 
+       // || 
+        )
+    {
+        Close();
+        return TRUE;
+    }
+    else if (pMsg->message == WM_MOUSEMOVE) {
+        if (m_bGotCursorPos)
+        {
+            int nDeltaX = pMsg->pt.x - m_LastPos.x;
+            if (nDeltaX < 0)
+                nDeltaX *= -1;
+            int nDeltaY = pMsg->pt.y - m_LastPos.y;
+            if (nDeltaY < 0)
+                nDeltaY *= -1;
+            m_LastPos = pMsg->pt;
+
+            if (nDeltaX + nDeltaY > 3) {
+#ifndef _DEBUG
+                Close();
+#endif
+                return TRUE;
+            }
+        }
+        else
+        {
+            m_bGotCursorPos = TRUE;
+            m_LastPos = pMsg->pt;
+        }
+    }
+
+    return CDHtmlDialog::PreTranslateMessage(pMsg);
+}
+
+
+void CScreenSaverDlg::PostNcDestroy()
+{
+    CDHtmlDialog::PostNcDestroy();
+    delete this;
+}
+
+
+BOOL CScreenSaverDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+    if (m_bPreview)
+    {
+        //Let the base class do its thing
+        return __super::OnSetCursor(pWnd, nHitTest, message);
+    }
+    else
+    {
+        SetCursor(NULL);
+        return TRUE;
+    }
+}
+
+
+void CScreenSaverDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+    if (nState == WA_INACTIVE)
+        Close();
+    else
+        __super::OnActivate(nState, pWndOther, bMinimized);
+}
+
+
+void CScreenSaverDlg::OnActivateApp(BOOL bActive, DWORD dwThreadID)
+{
+    if (!bActive)
+        Close();
+    else
+        __super::OnActivateApp(bActive, dwThreadID);
 }
