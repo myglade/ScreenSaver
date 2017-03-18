@@ -66,7 +66,7 @@ BOOL CScreenSaverApp::InitInstance()
     // Change the registry key under which our settings are stored
     // TODO: You should modify this string to be something appropriate
     // such as the name of your company or organization
-    SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+    SetRegistryKey(_T("Heesung"));
 
     m_host = AfxGetApp()->GetProfileString(gSection, gKey, _T(""));
     if (m_host == "")
@@ -174,7 +174,7 @@ void CScreenSaverApp::ShowConfigureDialog(CWnd *wnd)
 
     config.m_host = AfxGetApp()->GetProfileString(gSection, gKey, _T(""));
     if (config.m_host == "") {
-        config.m_host = _T("http://192.168.1.10");
+        config.m_host = _T("http://192.168.1.15:5000/index.html");
         AfxGetApp()->WriteProfileString(gSection, gKey, config.m_host);
     }
     

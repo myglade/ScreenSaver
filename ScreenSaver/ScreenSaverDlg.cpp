@@ -48,7 +48,9 @@ BOOL CScreenSaverDlg::OnInitDialog()
 	CRect r;
     GetBoundingRect(FALSE, NULL, r);
     MoveWindow(r);
-
+    ::ShowCursor(FALSE);
+ //   m_host = L"http://192.168.1.10:5000/index.html";
+ //   m_host = L"http://www.apple.com";
     this->Navigate(m_host);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -146,9 +148,7 @@ BOOL CScreenSaverDlg::PreTranslateMessage(MSG* pMsg)
             m_LastPos = pMsg->pt;
 
             if (nDeltaX + nDeltaY > 3) {
-#ifndef _DEBUG
                 Close();
-#endif
                 return TRUE;
             }
         }

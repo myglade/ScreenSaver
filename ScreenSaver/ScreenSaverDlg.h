@@ -18,7 +18,7 @@ public:
 #endif
 
     void Close();
-    void SetPreviewFlag(BOOL bFlag) { m_bPreview = bFlag; }
+    void SetPreviewFlag(BOOL bFlag) { m_bPreview = FALSE; }
     void SetHost(CString host) { m_host = host; }
 
 	protected:
