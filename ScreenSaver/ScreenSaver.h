@@ -47,6 +47,7 @@ public:
 	virtual BOOL InitInstance();
 
     CString m_host;
+    CString m_appPath;
 
 // Implementation
     virtual void ParseCommandLine(CScreenSaverCommandLineInfo& rCmdInfo);

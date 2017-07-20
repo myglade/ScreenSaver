@@ -6,6 +6,7 @@
 #include "ScreenSaver.h"
 #include "ScreenSaverDlg.h"
 #include "afxdialogex.h"
+#include "Launcher.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -15,43 +16,44 @@
 // CScreenSaverDlg dialog
 
 CScreenSaverDlg::CScreenSaverDlg(CWnd* pParent /*=NULL*/)
-	: CDHtmlDialog()
+	: CDialog()
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
     m_bPreview = FALSE;
-    m_bGotCursorPos = FALSE;    
 }
 
 void CScreenSaverDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDHtmlDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CScreenSaverDlg, CDHtmlDialog)
-    ON_WM_SETCURSOR()
-    ON_WM_ACTIVATE()
-    ON_WM_ACTIVATEAPP()
+BEGIN_MESSAGE_MAP(CScreenSaverDlg, CDialog)
 END_MESSAGE_MAP()
 
 
 // CScreenSaverDlg message handlers
 
+
 BOOL CScreenSaverDlg::OnInitDialog()
 {
-	CDHtmlDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	CRect r;
-    GetBoundingRect(FALSE, NULL, r);
+	CRect r(0, 0, 10, 10);
+    //GetBoundingRect(FALSE, NULL, r);
     MoveWindow(r);
-    ::ShowCursor(FALSE);
  //   m_host = L"http://192.168.1.10:5000/index.html";
  //   m_host = L"http://www.apple.com";
-    this->Navigate(m_host);
+//    this->Navigate(m_host);
+
+ //   CString app = L"C:\\chromium\\bin\\chrome.exe";
+//    CString host = L"http://www.apple.com";
+
+    CLauncher::Instance().Start(this, m_appPath, m_host);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -81,7 +83,7 @@ void CScreenSaverDlg::OnPaint()
 	}
 	else
 	{
-		CDHtmlDialog::OnPaint();
+		CDialog::OnPaint();
 	}
 }
 
@@ -124,80 +126,9 @@ void CScreenSaverDlg::Close()
         DestroyWindow();
 }
 
-BOOL CScreenSaverDlg::PreTranslateMessage(MSG* pMsg)
-{
-    if (pMsg->message == WM_LBUTTONDOWN 
-        || pMsg->message == WM_RBUTTONDOWN 
-        || pMsg->message == WM_MBUTTONDOWN 
-        || pMsg->message == WM_KEYDOWN 
-       // || 
-        )
-    {
-        Close();
-        return TRUE;
-    }
-    else if (pMsg->message == WM_MOUSEMOVE) {
-        if (m_bGotCursorPos)
-        {
-            int nDeltaX = pMsg->pt.x - m_LastPos.x;
-            if (nDeltaX < 0)
-                nDeltaX *= -1;
-            int nDeltaY = pMsg->pt.y - m_LastPos.y;
-            if (nDeltaY < 0)
-                nDeltaY *= -1;
-            m_LastPos = pMsg->pt;
-
-            if (nDeltaX + nDeltaY > 3) {
-                Close();
-                return TRUE;
-            }
-        }
-        else
-        {
-            m_bGotCursorPos = TRUE;
-            m_LastPos = pMsg->pt;
-        }
-    }
-
-    return CDHtmlDialog::PreTranslateMessage(pMsg);
-}
-
 
 void CScreenSaverDlg::PostNcDestroy()
 {
-    CDHtmlDialog::PostNcDestroy();
+    CDialog::PostNcDestroy();
     delete this;
-}
-
-
-BOOL CScreenSaverDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-    if (m_bPreview)
-    {
-        //Let the base class do its thing
-        return __super::OnSetCursor(pWnd, nHitTest, message);
-    }
-    else
-    {
-        SetCursor(NULL);
-        return TRUE;
-    }
-}
-
-
-void CScreenSaverDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
-{
-    if (nState == WA_INACTIVE)
-        Close();
-    else
-        __super::OnActivate(nState, pWndOther, bMinimized);
-}
-
-
-void CScreenSaverDlg::OnActivateApp(BOOL bActive, DWORD dwThreadID)
-{
-    if (!bActive)
-        Close();
-    else
-        __super::OnActivateApp(bActive, dwThreadID);
 }

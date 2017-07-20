@@ -6,7 +6,7 @@
 
 
 // CScreenSaverDlg dialog
-class CScreenSaverDlg : public CDHtmlDialog
+class CScreenSaverDlg : public CDialog
 {
 // Construction
 public:
@@ -19,7 +19,7 @@ public:
 
     void Close();
     void SetPreviewFlag(BOOL bFlag) { m_bPreview = FALSE; }
-    void SetHost(CString host) { m_host = host; }
+    void SetHost(CString host, CString appPath) { m_host = host; m_appPath = appPath; }
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
@@ -28,9 +28,8 @@ public:
 protected:
 	HICON m_hIcon;
     BOOL m_bPreview;
-    BOOL m_bGotCursorPos;
-    CPoint m_LastPos;
     CString m_host;
+    CString m_appPath;
 
     BOOL GetBoundingRect(BOOL bChild, CWnd* pParentWnd, CRect& rRect);
 
@@ -40,9 +39,6 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL PreTranslateMessage(MSG* pMsg);
     virtual void PostNcDestroy();
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-    afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
-    afx_msg void OnActivateApp(BOOL bActive, DWORD dwThreadID);
 };

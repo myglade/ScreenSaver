@@ -14,6 +14,7 @@ IMPLEMENT_DYNAMIC(CConfig, CDialogEx)
 CConfig::CConfig(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG1, pParent)
     , m_host(_T(""))
+    , m_path(_T(""))
 {
 
 }
@@ -26,6 +27,7 @@ void CConfig::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_EDIT1, m_host);
+    DDX_Text(pDX, IDC_EDIT2, m_path);
 }
 
 

@@ -14,7 +14,10 @@
 
 CString gSection = _T("screensaver");
 CString gKey = _T("host");
+CString gAppPath = _T("app_path");
+
 CString default_host = _T("http://localhost:8888/");
+CString default_appPath = _T("C:\\chromium\\bin\\");
 
 // CScreenSaverApp
 
@@ -75,6 +78,13 @@ BOOL CScreenSaverApp::InitInstance()
         AfxGetApp()->WriteProfileString(gSection, gKey, m_host);
     }
 
+    m_appPath = AfxGetApp()->GetProfileString(gSection, gAppPath, _T(""));
+    if (m_appPath == "")
+    {
+        m_appPath = default_appPath;
+        AfxGetApp()->WriteProfileString(gSection, gAppPath, m_appPath);
+    }
+
     CScreenSaverCommandLineInfo cmdInfo;
     ParseCommandLine(cmdInfo);
     return ProcessShellCommand(cmdInfo);
@@ -102,7 +112,7 @@ BOOL CScreenSaverApp::ProcessShellCommand(CScreenSaverCommandLineInfo& rCmdInfo)
     {
         CScreenSaverDlg *dlg = new CScreenSaverDlg();
         m_pMainWnd = dlg;
-        dlg->SetHost(m_host);
+        dlg->SetHost(m_host, m_appPath);
         dlg->SetPreviewFlag(FALSE);
         if (!dlg->Create(IDD_SCREENSAVER_DIALOG))
             return FALSE;
@@ -113,7 +123,7 @@ BOOL CScreenSaverApp::ProcessShellCommand(CScreenSaverCommandLineInfo& rCmdInfo)
     {
         CScreenSaverDlg *dlg = new CScreenSaverDlg();
         m_pMainWnd = dlg;
-        dlg->SetHost(m_host);
+        dlg->SetHost(m_host, m_appPath);
         dlg->SetPreviewFlag(TRUE);
 
         CWnd wndParent;
@@ -177,11 +187,23 @@ void CScreenSaverApp::ShowConfigureDialog(CWnd *wnd)
         config.m_host = _T("http://192.168.1.15:5000/index.html");
         AfxGetApp()->WriteProfileString(gSection, gKey, config.m_host);
     }
+
+    config.m_path = AfxGetApp()->GetProfileString(gSection, gAppPath, _T(""));
+    if (config.m_path == "") {
+        config.m_path = _T("C:\\chromium\\bin\\");
+        AfxGetApp()->WriteProfileString(gSection, gAppPath, config.m_path);
+    }
     
     if (config.DoModal() == IDOK)
     {
         if (config.m_host != "")
             AfxGetApp()->WriteProfileString(gSection, gKey, config.m_host);
+        if (config.m_path != "") {
+            if (config.m_path.Right(1) != "\\")
+                config.m_path += "\\";
+
+            AfxGetApp()->WriteProfileString(gSection, gAppPath, config.m_path);
+        }
     }
 }
 

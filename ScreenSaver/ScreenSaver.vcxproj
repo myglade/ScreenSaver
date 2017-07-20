@@ -182,7 +182,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Launcher.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ScreenSaveDlg_old.h" />
     <ClInclude Include="ScreenSaver.h" />
     <ClInclude Include="ScreenSaverDlg.h" />
     <ClInclude Include="stdafx.h" />
@@ -190,6 +192,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Launcher.cpp" />
+    <ClCompile Include="ScreenSaveDlg_old.cpp" />
     <ClCompile Include="ScreenSaver.cpp" />
     <ClCompile Include="ScreenSaverDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
