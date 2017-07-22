@@ -16,6 +16,7 @@ public:
     void UninstallHook();
     BOOL Start(CWnd *parent, CString app, CString host);
     void Stop();
+    void HackChrome();
 
     void StopPrevInstance();
     

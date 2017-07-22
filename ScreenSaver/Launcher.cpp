@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "Launcher.h"
 #include "ScreenSaverDlg.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <streambuf>
+
+using namespace std;
 
 CLauncher::CLauncher()
 {
@@ -125,7 +131,8 @@ BOOL CLauncher::Start(CWnd *parent, CString app, CString host)
 
     // --incognito
     // https://peter.sh/experiments/chromium-command-line-switches/
-    s.Format(L"%schrome.exe --kiosk --incognito %s", m_app, m_host);
+ //   s.Format(L"%schrome.exe --kiosk --no-default-browser-check --incognito %s", m_app, m_host);
+    s.Format(L"%schrome.exe --kiosk --no-default-browser-check  %s", m_app, m_host);
 
     if (!::CreateProcess(NULL,
             (LPWSTR)(LPCTSTR)s,
@@ -148,6 +155,51 @@ BOOL CLauncher::Start(CWnd *parent, CString app, CString host)
     return TRUE;
 }
 
+void CLauncher::HackChrome()
+{
+    TCHAR szPath[MAX_PATH];
+
+    SHGetFolderPath(NULL,
+        CSIDL_LOCAL_APPDATA,
+        NULL,
+        0,
+        szPath);
+    CString path = szPath;
+
+    path += L"\\Chromium\\User Data\\Default\\Preferences";
+
+    {
+        ifstream in(path);
+
+        if (!in.is_open())
+            return;
+
+        std::string str((std::istreambuf_iterator<char>(in)),
+                std::istreambuf_iterator<char>());
+        
+
+        string normal = "\"exit_type\":\"Normal\"";
+        string crash = "\"exit_type\":\"Crashed\"";
+
+        auto pos = str.find(crash);
+
+        if (pos == string::npos) {
+            in.close();
+            return;
+        }
+
+        string str2 = str.replace(pos, crash.size(), normal);
+
+        in.close();
+
+        CString path2 = path + "2";
+        ofstream out(path);
+
+        out << str2;
+        out.close();
+    }
+}
+
 void CLauncher::Stop()
 {
     UninstallHook();
@@ -155,9 +207,13 @@ void CLauncher::Stop()
     if (m_process == NULL)
         return;
 
+    StopPrevInstance(); 
+    Sleep(500);
     TerminateProcess(m_process, 0);
     CloseHandle(m_process);
     CloseHandle(m_thread);
+
+   // HackChrome();
 
     m_thread = NULL;
     m_process = NULL;

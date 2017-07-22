@@ -46,7 +46,7 @@ BOOL CScreenSaverDlg::OnInitDialog()
 	CRect r(0, 0, 10, 10);
     //GetBoundingRect(FALSE, NULL, r);
     MoveWindow(r);
- //   m_host = L"http://192.168.1.10:5000/index.html";
+ //   m_host = L"http://localhost:5000/index.html";
  //   m_host = L"http://www.apple.com";
 //    this->Navigate(m_host);
 
