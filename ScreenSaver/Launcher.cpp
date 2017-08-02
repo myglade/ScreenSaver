@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "ScreenSaver.h"
 #include "Launcher.h"
 #include "ScreenSaverDlg.h"
 #include <iostream>
@@ -7,6 +8,9 @@
 #include <streambuf>
 
 using namespace std;
+
+extern CString gSection;
+extern CString gWindowMode;
 
 CLauncher::CLauncher()
 {
@@ -94,6 +98,7 @@ LRESULT WINAPI MyKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (!CLauncher::Instance().m_screensaver_mode) {
         if (pKbdStruct->vkCode == VK_LSHIFT || pKbdStruct->vkCode == VK_RSHIFT) {
             ::ShowCursor(FALSE);
+            SetCursor(NULL);
             CLauncher::Instance().m_screensaver_mode = TRUE;
             TRACE("VK_SHIFT\n");
         }
@@ -116,11 +121,12 @@ LRESULT WINAPI MyKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 BOOL CLauncher::Start(CWnd *parent, CString app, CString host)
 {
-//    ::ShowCursor(FALSE);
-
     m_parent = parent;
     m_host = host;
     m_app = app;
+
+    ::ShowCursor(FALSE);
+    SetCursor(NULL);
 
     StopPrevInstance();
     InstallHook();
@@ -129,10 +135,17 @@ BOOL CLauncher::Start(CWnd *parent, CString app, CString host)
     PROCESS_INFORMATION processInfo;
     CString s = L"C:\\chromium\\bin\\chrome.exe --kiosk http://www.apple.com";
 
+
+    int window_mode = AfxGetApp()->GetProfileInt(gSection, gWindowMode, 0);
+
     // --incognito
     // https://peter.sh/experiments/chromium-command-line-switches/
  //   s.Format(L"%schrome.exe --kiosk --no-default-browser-check --incognito %s", m_app, m_host);
-    s.Format(L"%schrome.exe --kiosk --no-default-browser-check  %s", m_app, m_host);
+    
+    if (window_mode == 0)
+        s.Format(L"%schrome.exe --kiosk --no-default-browser-check  %s", m_app, m_host);
+    else
+        s.Format(L"%schrome.exe --no-default-browser-check  %s", m_app, m_host);
 
     if (!::CreateProcess(NULL,
             (LPWSTR)(LPCTSTR)s,

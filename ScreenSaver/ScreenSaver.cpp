@@ -15,6 +15,7 @@
 CString gSection = _T("screensaver");
 CString gKey = _T("host");
 CString gAppPath = _T("app_path");
+CString gWindowMode = _T("window");
 
 CString default_host = _T("http://localhost:8888/");
 CString default_appPath = _T("C:\\chromium\\bin\\");
