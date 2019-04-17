@@ -143,9 +143,9 @@ BOOL CLauncher::Start(CWnd *parent, CString app, CString host)
  //   s.Format(L"%schrome.exe --kiosk --no-default-browser-check --incognito %s", m_app, m_host);
     
     if (window_mode == 0)
-        s.Format(L"%schrome.exe --kiosk --no-default-browser-check  %s", m_app, m_host);
+        s.Format(L"%schrome.exe --kiosk --no-default-browser-check --disable-session-crashed-bubble %s", m_app, m_host);
     else
-        s.Format(L"%schrome.exe --no-default-browser-check  %s", m_app, m_host);
+        s.Format(L"%schrome.exe --no-default-browser-check --disable-session-crashed-bubble %s", m_app, m_host);
 
     if (!::CreateProcess(NULL,
             (LPWSTR)(LPCTSTR)s,
