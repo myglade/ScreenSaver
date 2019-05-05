@@ -184,18 +184,18 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Launcher.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ScreenSaveDlg_old.h" />
-    <ClInclude Include="ScreenSaver.h" />
     <ClInclude Include="ScreenSaverDlg.h" />
+    <ClInclude Include="ScreenSaver.h" />
+    <ClInclude Include="ScreenSaverDlg_external.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Launcher.cpp" />
-    <ClCompile Include="ScreenSaveDlg_old.cpp" />
-    <ClCompile Include="ScreenSaver.cpp" />
     <ClCompile Include="ScreenSaverDlg.cpp" />
+    <ClCompile Include="ScreenSaver.cpp" />
+    <ClCompile Include="ScreenSaverDlg_external.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
